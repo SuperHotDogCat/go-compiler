@@ -1,0 +1,154 @@
+# asm += "	pushq %rdi\n"	を残した場合のassemblyコード
+	.text
+	.globl	sum2
+	.type	sum2, @function
+sum2:
+.LFB0:
+	endbr64
+	pushq	%rbp # [%rbp(f's %rbp address), n, return_address, %rbp(sum2's %rbp address), ]
+	movq	%rsp, %rbp
+	subq $8, %rsp
+	movq %rdi, -8(%rbp)  # [%rbp(f's %rbp address), n, return_address, %rbp(sum2's %rbp address), n % 10000]
+	subq $8, %rsp
+	movq $0, -16(%rbp) # [%rbp(f's %rbp address), n, return_address, %rbp(sum2's %rbp address), n % 10000, i, ]
+	subq $8, %rsp
+	movq $0, -24(%rbp)  # [%rbp(f's %rbp address), n, return_address, %rbp(sum2's %rbp address), n % 10000, i, s]
+	movq %rbp, %rax 
+	subq $16, %rax
+	pushq %rax
+	pushq $0
+	popq %rdi
+	popq %rax
+	movq %rdi, (%rax) # *(i) = 0
+	pushq %rdi # [%rbp(f's %rbp address), n, return_address, %rbp(sum2's %rbp address), n % 10000, i, s, 0]
+	movq %rbp, %rax
+	subq $24, %rax
+	pushq %rax
+	pushq $0
+	popq %rdi
+	popq %rax
+	movq %rdi, (%rax) # *(s) = 0
+	pushq %rdi # [%rbp(f's %rbp address), n, return_address, %rbp(sum2's %rbp address), n % 10000, i, s, 0, 0]
+.Lbegin1:
+	movq %rbp, %rax
+	subq $16, %rax
+	pushq %rax
+	popq %rax
+	movq (%rax), %rax
+	pushq %rax # [%rbp(f's %rbp address), n, return_address, %rbp(sum2's %rbp address), n % 10000, i, s, 0, 0, i]
+	movq %rbp, %rax
+	subq $8, %rax
+	pushq %rax
+	popq %rax
+	movq (%rax), %rax
+	pushq %rax # [%rbp(f's %rbp address), n, return_address, %rbp(sum2's %rbp address), n % 10000, i, s, 0, 0, i, n % 10000]
+	movq %rbp, %rax
+	subq $8, %rax
+	pushq %rax
+	popq %rax
+	movq (%rax), %rax
+	pushq %rax # [%rbp(f's %rbp address), n, return_address, %rbp(sum2's %rbp address), n % 10000, i, s, 0, 0, i, n % 10000, n % 10000]
+	popq %rdi
+	popq %rax
+	imulq %rdi, %rax # 
+	pushq %rax # [%rbp(f's %rbp address), n, return_address, %rbp(sum2's %rbp address), n % 10000, i, s, 0, 0]
+	popq %rdi 
+	popq %rax
+	cmpq %rdi, %rax 
+	setl %al # i < n % 10000 * n % 10000
+	movzb %al, %rax
+	pushq %rax
+	popq %rax
+	cmpq $0, %rax
+	je .Lend1 # if i == n % 10000 * n % 10000ならjmp
+	movq %rbp, %rax
+	subq $24, %rax
+	pushq %rax # [%rbp(f's %rbp address), n, return_address, %rbp(sum2's %rbp address), n % 10000, i, s, 0, 0, s_address]
+	movq %rbp, %rax
+	subq $24, %rax
+	pushq %rax # [%rbp(f's %rbp address), n, return_address, %rbp(sum2's %rbp address), n % 10000, i, s, 0, 0, s_address, s_address]
+	popq %rax
+	movq (%rax), %rax
+	pushq %rax # [%rbp(f's %rbp address), n, return_address, %rbp(sum2's %rbp address), n % 10000, i, s, 0, 0, s_address, s]
+	movq %rbp, %rax
+	subq $16, %rax
+	pushq %rax 
+	popq %rax
+	movq (%rax), %rax
+	pushq %rax # [%rbp(f's %rbp address), n, return_address, %rbp(sum2's %rbp address), n % 10000, i, s, 0, 0, s_address, s, i]
+	popq %rdi
+	popq %rax
+	addq %rdi, %rax
+	pushq %rax # [%rbp(f's %rbp address), n, return_address, %rbp(sum2's %rbp address), n % 10000, i, s, 0, 0, s_address, s+i]
+	popq %rdi
+	popq %rax
+	movq %rdi, (%rax) # *s = s+i
+	pushq %rdi # [%rbp(f's %rbp address), n, return_address, %rbp(sum2's %rbp address), n % 10000, i, s, 0, 0, s+i]
+	movq %rbp, %rax
+	subq $16, %rax
+	pushq %rax # [%rbp(f's %rbp address), n, return_address, %rbp(sum2's %rbp address), n % 10000, i, s, 0, 0, s+i, i_address]
+	movq %rbp, %rax
+	subq $16, %rax
+	pushq %rax # [%rbp(f's %rbp address), n, return_address, %rbp(sum2's %rbp address), n % 10000, i, s, 0, 0, s+i, i_address, i_address]
+	popq %rax
+	movq (%rax), %rax
+	pushq %rax # [%rbp(f's %rbp address), n, return_address, %rbp(sum2's %rbp address), n % 10000, i, s, 0, 0, s+i, i_address, i]
+	pushq $1 # [%rbp(f's %rbp address), n, return_address, %rbp(sum2's %rbp address), n % 10000, i, s, 0, 0, s+i, i_address, i, 1]
+	popq %rdi
+	popq %rax
+	addq %rdi, %rax # i+1
+	pushq %rax # [%rbp(f's %rbp address), n, return_address, %rbp(sum2's %rbp address), n % 10000, i, s, 0, 0, s+i, i_address, i+1]
+	popq %rdi
+	popq %rax
+	movq %rdi, (%rax) # *i = i + 1, 
+	pushq %rdi # [%rbp(f's %rbp address), n, return_address, %rbp(sum2's %rbp address), n % 10000, i, s, 0, 0, s+i, i+1]
+	jmp .Lbegin1
+.Lend1:
+	movq %rbp, %rax 
+	subq $24, %rax
+	pushq %rax
+	popq %rax
+	movq (%rax), %rax
+	pushq %rax # [%rbp(f's %rbp address), n, return_address, %rbp(sum2's %rbp address), n % 10000, i, s, 0, 0, s+i, i+1, s]
+	popq %rax # %rsx = s, [%rbp(f's %rbp address), n, return_address, %rbp(sum2's %rbp address), n % 10000, i, s, 0, 0, s+i, i+1]
+	movq %rbp, %rsp
+	popq	%rbp
+	ret
+	movq %rbp, %rsp
+	popq	%rbp
+	ret
+.LFE1:
+	.size sum2, .-sum2
+	.globl	f
+	.type	f, @function
+f:
+.LFB2:
+	endbr64
+	pushq	%rbp # [%rbp(f's %rbp address)]
+	movq	%rsp, %rbp # [%rbp(f's %rbp address)]
+	subq $8, %rsp 
+	movq %rdi, -8(%rbp) # [%rbp(f's %rbp address), n]
+	movq %rbp, %rax
+	subq $8, %rax
+	pushq %rax
+	popq %rax
+	movq (%rax), %rax
+	pushq %rax # [%rbp(f's %rbp address), n, ]
+	pushq $10000 # [%rbp(f's %rbp address), n, 10000]
+	popq %rdi # 10000
+	popq %rax # n # [%rbp(f's %rbp address), n]
+	cqo
+	idivq %rdi 
+	movq %rdx, %rax 
+	pushq %rax # [%rbp(f's %rbp address), n, n % 10000]
+	popq %rax # [%rbp(f's %rbp address), n]
+	movq %rax, %rdi # $rdi = n % 10000
+	call sum2 # [%rbp(f's %rbp address), n, return_address]
+	pushq %rax
+	popq %rax
+	movq %rbp, %rsp
+	popq	%rbp
+	ret
+	movq %rbp, %rsp
+	popq	%rbp
+	ret

@@ -1,0 +1,104 @@
+# asm += "	pushq %rdi\n"を削除した場合
+	.text
+	.globl	f
+	.type	f, @function
+f:
+.LFB0:
+	endbr64
+	pushq	%rbp # [%rbp(f's %rbp address)]
+	movq	%rsp, %rbp 
+	subq $8, %rsp
+	movq %rdi, -8(%rbp) # [%rbp(f's %rbp address), a0]
+	subq $8, %rsp
+	movq %rsi, -16(%rbp)
+	subq $8, %rsp
+	movq %rdx, -24(%rbp)
+	subq $8, %rsp
+	movq %rcx, -32(%rbp)
+	subq $8, %rsp
+	movq %r8, -40(%rbp)
+	subq $8, %rsp
+	movq %r9, -48(%rbp)
+	subq $8, %rsp
+	movq 16(%rbp), %rax
+	movq %rax, -56(%rbp)
+	subq $8, %rsp
+	movq 24(%rbp), %rax
+	movq %rax, -64(%rbp) # [%rbp(f's %rbp address), a0, a1, a2, a3, a4, a5, a6, a7, a8]
+	movq %rbp, %rax 
+	subq $8, %rax
+	pushq %rax # [%rbp(f's %rbp address), a0, a1, a2, a3, a4, a5, a6, a7, a8, a0_address]
+	movq %rbp, %rax
+	subq $16, %rax
+	pushq %rax # [%rbp(f's %rbp address), a0, a1, a2, a3, a4, a5, a6, a7, a8, a0_address, a1_address]
+	movq %rbp, %rax
+	subq $24, %rax
+	pushq %rax
+	popq %rax
+	movq (%rax), %rax
+	pushq %rax # [%rbp(f's %rbp address), a0, a1, a2, a3, a4, a5, a6, a7, a8, a0_address, a1_address, a2]
+	movq %rbp, %rax
+	subq $32, %rax
+	pushq %rax
+	popq %rax
+	movq (%rax), %rax
+	pushq %rax # [%rbp(f's %rbp address), a0, a1, a2, a3, a4, a5, a6, a7, a8, a0_address, a1_address, a2, a3]
+	movq %rbp, %rax
+	subq $40, %rax
+	pushq %rax 
+	popq %rax
+	movq (%rax), %rax
+	pushq %rax # [%rbp(f's %rbp address), a0, a1, a2, a3, a4, a5, a6, a7, a8, a0_address, a1_address, a2, a3, a4]
+	popq %rdi
+	popq %rax
+	imulq %rdi, %rax
+	pushq %rax # [%rbp(f's %rbp address), a0, a1, a2, a3, a4, a5, a6, a7, a8, a0_address, a1_address, a2, a3*a4]
+	popq %rdi
+	popq %rax
+	addq %rdi, %rax 
+	pushq %rax # [%rbp(f's %rbp address), a0, a1, a2, a3, a4, a5, a6, a7, a8, a0_address, a1_address, a2+a3*a4]
+	movq %rbp, %rax
+	subq $48, %rax
+	pushq %rax
+	popq %rax
+	movq (%rax), %rax
+	pushq %rax # [%rbp(f's %rbp address), a0, a1, a2, a3, a4, a5, a6, a7, a8, a0_address, a1_address, a2+a3*a4, a5]
+	movq %rbp, %rax
+	subq $56, %rax
+	pushq %rax
+	popq %rax
+	movq (%rax), %rax
+	pushq %rax # [%rbp(f's %rbp address), a0, a1, a2, a3, a4, a5, a6, a7, a8, a0_address, a1_address, a2+a3*a4, a5, a6]
+	movq %rbp, %rax
+	subq $64, %rax
+	pushq %rax 
+	popq %rax
+	movq (%rax), %rax
+	pushq %rax # [%rbp(f's %rbp address), a0, a1, a2, a3, a4, a5, a6, a7, a8, a0_address, a1_address, a2+a3*a4, a5, a6, a7]
+	popq %rdi
+	popq %rax
+	imulq %rdi, %rax 
+	pushq %rax # [%rbp(f's %rbp address), a0, a1, a2, a3, a4, a5, a6, a7, a8, a0_address, a1_address, a2+a3*a4, a5, a6*a7]
+	popq %rdi
+	popq %rax
+	addq %rdi, %rax 
+	pushq %rax # [%rbp(f's %rbp address), a0, a1, a2, a3, a4, a5, a6, a7, a8, a0_address, a1_address, a2+a3*a4, a5+a6*a7]
+	popq %rdi # a5+a6*a7
+	popq %rax # a2+a3*a4
+	cmpq %rdi, %rax 
+	setl %al # a2+a3*a4 < a5+a6*a7
+	movzb %al, %rax
+	pushq %rax # [%rbp(f's %rbp address), a0, a1, a2, a3, a4, a5, a6, a7, a8, a0_address, a1_address, a2+a3*a4 < a5+a6*a7]
+	popq %rdi
+	popq %rax
+	movq %rdi, (%rax) # a1 = a2+a3*a4 < a5+a6*a7 [%rbp(f's %rbp address), a0, a1, a2, a3, a4, a5, a6, a7, a8, a0_address,]
+	popq %rdi # ここでasm += "	pushq %rdi\n"を消すとa8, a0_addressが呼び出され, エラーが発生する。そりゃそうという感じである
+	popq %rax
+	movq %rdi, (%rax)
+	popq %rax
+	movq %rbp, %rsp
+	popq	%rbp
+	ret
+	movq %rbp, %rsp
+	popq	%rbp
+	ret
