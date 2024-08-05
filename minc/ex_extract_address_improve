@@ -18,49 +18,53 @@ f:
 	pushq %rax
 	leaq -16(%rbp), %rax
 	pushq %rax
-	leaq -24(%rbp), %rax
-	movq (%rax), %rax
-	pushq %rax
-	leaq -32(%rbp), %rax
-	movq (%rax), %rax
-	pushq %rax
-	leaq -40(%rbp), %rax
-	movq (%rax), %rax
-	movq %rax, %rdi
+	pushq -24(%rbp)
+	pushq -32(%rbp)
+	pushq -40(%rbp)
+	popq %rdi
 	popq %rax
 	imulq %rdi, %rax
-	movq %rax, %rdi
+	pushq %rax
+	popq %rdi
 	popq %rax
 	addq %rdi, %rax
 	pushq %rax
-	leaq -48(%rbp), %rax
-	movq (%rax), %rax
-	pushq %rax
-	leaq -56(%rbp), %rax
-	movq (%rax), %rax
-	pushq %rax
-	leaq -64(%rbp), %rax
-	movq (%rax), %rax
-	movq %rax, %rdi
+	pushq -48(%rbp)
+	pushq -56(%rbp)
+	pushq -64(%rbp)
+	popq %rdi
 	popq %rax
 	imulq %rdi, %rax
-	movq %rax, %rdi
+	pushq %rax
+	popq %rdi
 	popq %rax
 	addq %rdi, %rax
-	movq %rax, %rdi
+	pushq %rax
+	popq %rdi
 	popq %rax
 	cmpq %rdi, %rax
 	setl %al
 	movzb %al, %rax
-	movq %rax, %rdi
+	pushq %rax
+	popq %rdi
 	popq %rax
 	movq %rdi, (%rax)
+	pushq %rdi
+	popq %rdi
 	popq %rax
 	movq %rdi, (%rax)
-	movq %rdi, %rax
+	pushq %rdi
+	popq %rax
 	movq %rbp, %rsp
 	popq	%rbp
 	ret
 	movq %rbp, %rsp
 	popq	%rbp
 	ret
+
+time ./run_test.sh > all_test 
+warning: GOPATH set to GOROOT (/home/u24068/go) has no effect
+
+real    0m29.904s
+user    0m19.674s
+sys     0m7.532s

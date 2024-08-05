@@ -19,12 +19,15 @@ f:
 	leaq -16(%rbp), %rax
 	pushq %rax
 	leaq -24(%rbp), %rax
+	movq %rax, %rax
 	movq (%rax), %rax
 	pushq %rax
 	leaq -32(%rbp), %rax
+	movq %rax, %rax
 	movq (%rax), %rax
 	pushq %rax
 	leaq -40(%rbp), %rax
+	movq %rax, %rax
 	movq (%rax), %rax
 	movq %rax, %rdi
 	popq %rax
@@ -34,12 +37,15 @@ f:
 	addq %rdi, %rax
 	pushq %rax
 	leaq -48(%rbp), %rax
+	movq %rax, %rax
 	movq (%rax), %rax
 	pushq %rax
 	leaq -56(%rbp), %rax
+	movq %rax, %rax
 	movq (%rax), %rax
 	pushq %rax
 	leaq -64(%rbp), %rax
+	movq %rax, %rax
 	movq (%rax), %rax
 	movq %rax, %rdi
 	popq %rax
@@ -55,6 +61,7 @@ f:
 	movq %rax, %rdi
 	popq %rax
 	movq %rdi, (%rax)
+	movq %rdi, %rdi
 	popq %rax
 	movq %rdi, (%rax)
 	movq %rdi, %rax

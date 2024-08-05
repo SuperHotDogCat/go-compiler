@@ -14,50 +14,67 @@ f:
 	pushq %r9
 	pushq 16(%rbp)
 	pushq 24(%rbp)
-	leaq -8(%rbp), %rax
+	movq %rbp, %rax
+	subq $8, %rax
 	pushq %rax
-	leaq -16(%rbp), %rax
+	movq %rbp, %rax
+	subq $16, %rax
 	pushq %rax
-	leaq -24(%rbp), %rax
+	movq %rbp, %rax
+	subq $24, %rax
 	movq (%rax), %rax
 	pushq %rax
-	leaq -32(%rbp), %rax
+	movq %rbp, %rax
+	subq $32, %rax
 	movq (%rax), %rax
 	pushq %rax
-	leaq -40(%rbp), %rax
+	movq %rbp, %rax
+	subq $40, %rax
 	movq (%rax), %rax
-	movq %rax, %rdi
+	pushq %rax
+	popq %rdi
 	popq %rax
 	imulq %rdi, %rax
-	movq %rax, %rdi
+	pushq %rax
+	popq %rdi
 	popq %rax
 	addq %rdi, %rax
 	pushq %rax
-	leaq -48(%rbp), %rax
+	movq %rbp, %rax
+	subq $48, %rax
 	movq (%rax), %rax
 	pushq %rax
-	leaq -56(%rbp), %rax
+	movq %rbp, %rax
+	subq $56, %rax
 	movq (%rax), %rax
 	pushq %rax
-	leaq -64(%rbp), %rax
+	movq %rbp, %rax
+	subq $64, %rax
 	movq (%rax), %rax
-	movq %rax, %rdi
+	pushq %rax
+	popq %rdi
 	popq %rax
 	imulq %rdi, %rax
-	movq %rax, %rdi
+	pushq %rax
+	popq %rdi
 	popq %rax
 	addq %rdi, %rax
-	movq %rax, %rdi
+	pushq %rax
+	popq %rdi
 	popq %rax
 	cmpq %rdi, %rax
 	setl %al
 	movzb %al, %rax
-	movq %rax, %rdi
+	pushq %rax
+	popq %rdi
 	popq %rax
 	movq %rdi, (%rax)
+	pushq %rdi
+	popq %rdi
 	popq %rax
 	movq %rdi, (%rax)
-	movq %rdi, %rax
+	pushq %rdi
+	popq %rax
 	movq %rbp, %rsp
 	popq	%rbp
 	ret
