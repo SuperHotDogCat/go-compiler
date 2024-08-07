@@ -3,17 +3,18 @@ import "fmt"
 import "math"
 import "regexp"
 
-var label int64 = 0
+var label int64 = 0 // distinctive number for a label
 
-var seen_variable_to_offset = map[string]int64{"_": 0}
-var argument_indices = []string{"%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"}
+var seen_variable_to_offset = map[string]int64{"_": 0} // The offset of named variables
+var argument_indices = []string{"%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"} // The arguments of the functions
 
 func ast_to_asm_program(program * Program) string {
 	asm := ""
-	prev_func_name := ""
+	prev_func_name := "" // If the number of the functions is more than 2, this variable is needed to define another function.
 	for i, def := range program.defs {
 		if definition, ok := def.(*DefFun); ok {
 			local_label := label
+			/* define functions */
 			if (i == 0){
 				asm += fmt.Sprintf("	.text\n")
 				asm += fmt.Sprintf("	.globl	%s\n", definition.name)
@@ -24,7 +25,7 @@ func ast_to_asm_program(program * Program) string {
 				asm += fmt.Sprintf("	.globl	%s\n", definition.name)
 				asm += fmt.Sprintf("	.type	%s, @function\n", definition.name)
 			}
-			definition_to_asm(definition, &asm)
+			definition_to_asm(definition, &asm) 
 			seen_variable_to_offset = map[string]int64{"_": 0}
 			prev_func_name = definition.name
 		}
@@ -197,7 +198,6 @@ func gen_function_prologue(definition *DefFun) string {
 	asm += fmt.Sprintf("%s:\n", definition.name)
 	asm += fmt.Sprintf(".LFB%d:\n", local_label)
 	label += 1
-	asm += "	endbr64\n"
 	asm += "	pushq	%rbp\n" // %rbpが関数の開始アドレスを指すようになる
 	asm += "	movq	%rsp, %rbp\n" // %rspがスタックの先頭を指すようになる
 	return asm
@@ -207,7 +207,7 @@ func gen_function_body(definition *DefFun) string {
 	// definition = type_expr identifier "(" parameter_list ")" compound_stmt 
 	asm := ""
 	params := definition.params
-	// paramsに関する処理を行う -> 全てstackに退避
+	// paramsに関する処理を行う -> 全て%rbpとのoffsetで表現
 	for i, param := range params {
 		max_offset := get_max_offset(seen_variable_to_offset)
 		offset := max_offset + 8
@@ -215,7 +215,7 @@ func gen_function_body(definition *DefFun) string {
 		if (i < len(argument_indices)){
 			asm += fmt.Sprintf("	pushq %s\n", argument_indices[i])
 		} else {
-			asm += fmt.Sprintf("	pushq %d(%%rbp)\n", 8*(i-5+1))
+			asm += fmt.Sprintf("	pushq %d(%%rbp)\n", 8*(i-5+1)) // i >= len(argument_indices) の範囲は16(%rbp), 24(%rbp), ...にある
 		}
 	}
 	stmt := definition.body
@@ -224,6 +224,8 @@ func gen_function_body(definition *DefFun) string {
 }
 
 func gen_function_epilogue() string {
+	// 終了処理をする。
+	// %rbpの値を%rspにコピー, %rbpを現在呼び出されている関数よりも前の%rbpの値に
 	asm := "	movq %rbp, %rsp\n" 
 	asm += "	popq	%rbp\n" 
 	asm += "	ret\n"
@@ -231,7 +233,7 @@ func gen_function_epilogue() string {
 }
 
 func gen_stmt(stmt Stmt,) string {
-	// pattern matching
+	// pattern matching for stmt
 	asm := ""
 	switch stmt := stmt.(type){
 		case *StmtEmpty:
@@ -258,6 +260,19 @@ func gen_stmt(stmt Stmt,) string {
 			// 0個以上のDeclとStmtに関して処理を行う
 			return asm
 		case *StmtIf:
+			/*
+			if (stmt.cond) stmt.then_stmt else stmt.else_stmt
+			のコンパイル方法は
+			stmt.condをコンパイルしたコード // スタックトップに結果が入っているはず
+  			popq %rax
+  			cmpq $0, %rax
+  			je  .LelseXXX
+  			stmt.then_stmtをコンパイルしたコード
+  			jmp .LendXXX
+			.LelseXXX
+  			stmt.else_stmtをコンパイルしたコード
+			.LendXXX
+			*/
 			local_label := label
 			label += 1
 			asm += gen_expr(stmt.cond,false)
@@ -271,6 +286,18 @@ func gen_stmt(stmt Stmt,) string {
 			asm += fmt.Sprintf(".Lend%d:\n", local_label)
 			return asm
 		case *StmtWhile:
+			/*
+			while (stmt.cond) stmt.body
+			のコンパイル方法
+			.LbeginXXX:
+  			stmt.condをコンパイルしたコード
+  			popq %rax
+  			cmpq $0, %rax
+  			je  .LendXXX
+  			stmt.bodyをコンパイルしたコード
+  			jmp .LbeginXXX
+			.LendXXX:
+			*/
 			local_label := label
 			label += 1
 			asm += fmt.Sprintf(".Lbegin%d:\n", local_label)
@@ -308,6 +335,7 @@ func gen_expr(expr Expr,is_return bool) string {
 			return asm
 		case *ExprOp:
 			switch expr.op {
+				// Calculate the left side of AST and then calculate the right side of AST if expr.op is a binary operator. 
 				case "+":
 					if (len(expr.args) == 1){
 						// unary op
@@ -442,6 +470,7 @@ func gen_expr(expr Expr,is_return bool) string {
 					asm += "	popq %rax\n"
 					asm += "	movq %rdi, (%rax)\n"
 					if (is_return == true){
+						// return a = b = c = ...のような場合に対応する
 						asm += "	pushq %rdi\n" 
 					}
 					return asm
@@ -510,6 +539,7 @@ func get_max_offset(offsets map[string]int64) int64 {
 }
 
 func gen_lval(offset int64)string{
+	// save the address of a variable to the top of the stack
 	asm := ""
 	asm += "	movq %rbp, %rax\n"
 	asm += fmt.Sprintf("	subq $%d, %%rax\n", offset)
@@ -518,6 +548,7 @@ func gen_lval(offset int64)string{
 }
 
 func gen_read_lval()string{
+	// save the value of a variable to the top of the stack
 	asm := ""
 	asm += "	popq %rax\n"
 	asm += "	movq (%rax), %rax\n"
